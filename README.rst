@@ -4,8 +4,8 @@ Security notes for OpenStack components
 
 Installation
 ============
-virtualenv -p python3 .venv && source .venv/bin/activate
-pip3 install git+https://github.com/vladiskuz/secnotes
+``virtualenv -p python3 .venv && source .venv/bin/activate``
+``pip3 install git+https://github.com/vladiskuz/secnotes``
 
 
 How to use
