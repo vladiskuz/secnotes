@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os
-from pprint import pprint
 import re
 import requests
 import sys
@@ -26,16 +25,21 @@ LAUNCHPAD_BUG_LINK = 'https://launchpad.net/bugs/'
 JIRA_TASK_LINK = 'https://mirantis.jira.com/browse/'
 
 
-STORYBOARD_ISSUE_PATTERN = re.compile('Story:\s?#?\d+|Task:\s#?\d+')
+STORYBOARD_ISSUE_PATTERN = re.compile('Story:\s?#?\d+|Task:\s#?\d+',
+                                      re.IGNORECASE)
 LAUNCHPAD_ISSUE_PATTERN = re.compile(
-    'Closes-Bug:\s?#?\d+|Related-Bug:\s?#?\d+|Fixes-Bug:\s?#?\d+|')
-JIRA_ISSUE_PATTERN = re.compile('PROD-\d+|PROD:\d+')
+    'Closes-Bug:\s?#?\d+|'
+    'Close-Bug:\s?#?\d+|'
+    'Partial-Bug:\s?#?\d+|'
+    'Related-Bug:\s?#?\d+|'
+    'Fixes-Bug:\s?#?\d+|'
+    'Fix-Bug:\s?#?\d+|',
+    re.IGNORECASE)
+JIRA_ISSUE_PATTERN = re.compile('PROD-\d+|PROD:\d+', re.IGNORECASE)
 
 
 TRACKERS_ISSUE_PATTERN_MAP = {
-#    STORYBOARD: STORYBOARD_ISSUE_PATTERN,
     LAUNCHPAD: LAUNCHPAD_ISSUE_PATTERN,
-#    JIRA: JIRA_ISSUE_PATTERN
 }
 
 
@@ -166,14 +170,12 @@ def parse_tracker_bug(tracker):
                     final_result.append('{hexsha} '
                                         '{commit_title} '
                                         '{tracker_link}'.format(
-                        hexsha=hexsha[:7],
-                        commit_title=commit_info['title'],
-                        tracker_link=tracker_link
-                    ))
+                                            hexsha=hexsha[:7],
+                                            commit_title=commit_info['title'],
+                                            tracker_link=tracker_link))
             elif tracker in (STORYBOARD, JIRA):
                 raise NotImplementedError("Functionality for tracker {0}"
                                           " isn't implemented".format(tracker))
-
 
 
 def main():
@@ -192,9 +194,9 @@ def main():
         os.mkdir(args.workdir)
     repo = get_repo(gerrit_uri, os.path.join(args.workdir,
                                              os.path.basename(args.project)))
-    commits = repo.iter_commits('{start_commit}^..{end_commit}'.format(
+    commits = repo.iter_commits('{start_commit}^...{end_commit}'.format(
         start_commit=args.start_commit,
-        end_commit=args.end_commit))
+        end_commit=args.end_commit), no_merges=True, remove_empty=True)
     LOG.info('Start analyzing commits')
     for commit in commits:
         extract_bug_reference(commit)
